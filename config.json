@@ -1,0 +1,15 @@
+{
+  "default_from_address": "foo@example.com",
+  "aws_mail_server":      "localhost",
+  "aws_mail_user":        "foor",
+  "aws_mail_pass":        "bar",
+  "default_ttl":          30,
+  "logfile":              "/tmp/riemann.log",
+  "emails":               {
+    "domain": "@example.com",
+    "bob":    "soo@dhjdhs.com",
+    "alice":  "sjdh@s83jhd.com"
+  },
+  "opsgenie_api_key":     "askldjaslkdjaskjaskldjaslkdjsakl"
+}
+
