@@ -76,3 +76,7 @@
   "Fires when metric value is equal to the condition value"
   (partial compare-metric-and-conditions =))
 
+(def when-not-equal
+  "Fires when metric value is not equal to the condition value"
+  (partial compare-metric-and-conditions (complement =)))
+

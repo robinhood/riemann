@@ -7,5 +7,5 @@ also pushed to a local Elasticsearch instance. All of the events that
 result in OK/Non-OK states are pushed to the local Elasticsearch
 instance as well.
 
-This setup is further docomented here. Please read that blog post for
+This setup is further documented here. Please read that blog post for
 the nitty-gritty.
