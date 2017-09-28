@@ -37,6 +37,12 @@
        aggregate-by-host#
        (smap rewrite-host aggregate-by-host#))))
 
+(defmacro aggregate-by
+  [conditions consumer-stream]
+  `(if-let [aggregator# (get-in ~conditions [:modifiers :by])]
+     (by aggregator# ~consumer-stream)
+     ~consumer-stream))
+
 (defn subset? [conditions event]
   (every? (fn [[k v]] (= (k event) v)) conditions))
 

@@ -89,8 +89,7 @@
   [multi-rules]
   (doseq [multi-rule multi-rules]
     (riemann.config/streams
-     (with :ttl (riemann.config/rh_config "default_ttl")
-       (process-multi-metric-rule multi-rule)))))
+     (process-multi-metric-rule multi-rule))))
 
 
 (let [rule-processors {:single-metric-rules process-single-metric-rule
@@ -99,4 +98,20 @@
     (flatten
      (map (fn [rule]
             ((rule-type rule-processors) rule)) rules))))
+
+(defn extract-single-metric-name
+  "For every rule extract the metric name that we care about"
+  ([rule]
+     (:metric-name rule)))
+
+(defn extract-multi-metric-names
+  "For every rule extract the metric names that we care about"
+  ([rule]
+     (map extract-single-metric-name (:filters rule))))
+
+(let [rule-processors {:single-metric-rules extract-single-metric-name
+                       :multi-metric-rules extract-multi-metric-names}]
+  (defn get-interesting-metrics [[rule-type rules]]
+    (map (fn [rule]
+           ((rule-type rule-processors) rule)) rules)))
 

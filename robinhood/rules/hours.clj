@@ -49,6 +49,24 @@
          (t/interval (:extended_opens_at all-market-hours)
                      (:opens_at all-market-hours)))))))
 
+(def i-start-of-market-hours
+  "Interval for start-of-market-hours hours"
+  (memoize
+   (fn [date]
+     (let [all-market-hours (get-market-status date)]
+       (if (:open? all-market-hours)
+         (t/interval (:opens_at all-market-hours)
+                     (t/plus (:opens_at all-market-hours) (t/minutes 10))))))))
+
+(def i-end-of-market-hours
+  "Interval for end-of-market-hours hours"
+  (memoize
+   (fn [date]
+     (let [all-market-hours (get-market-status date)]
+       (if (:open? all-market-hours)
+         (t/interval (t/plus (:closes_at all-market-hours) (t/minutes -10))
+                     (:closes_at all-market-hours)))))))
+
 (def i-after-market-hours
   "Interval for after-market hours"
   (memoize
@@ -85,12 +103,24 @@
        (if (not (:open? all-market-hours))
          (t/interval day-start (t/plus day-start (t/hours 24))))))))
 
+(def i-engineer-work-hours
+  "Interval active when engineers usually are"
+  (memoize
+   (fn [date]
+     (let [all-market-hours (get-market-status date)]
+       (if (:open? all-market-hours)
+         (t/interval (t/plus (:opens_at all-market-hours) (t/minutes 210))
+                     (t/plus (:closes_at all-market-hours) (t/minutes 240))))))))
+
 (let [interval-defns {:market i-market-hours
                       :pre-market i-pre-market-hours
+                      :start-of-market-hours i-start-of-market-hours
+                      :end-of-market-hours i-end-of-market-hours
                       :after-market i-after-market-hours
                       :extended i-extended-hours
                       :trading i-trading-day
-                      :non-trading i-non-trading-day}]
+                      :non-trading i-non-trading-day
+                      :engineer-work-hours i-engineer-work-hours}]
   (defn- check-event-hours
     "Given a trading hour type (:market, :extended etc), call children if the
      event happened during that interval."
@@ -114,6 +144,14 @@
   "Active only during pre-market"
   (partial check-event-hours :pre-market))
 
+(def start-of-market-hours
+  "Active only during the 10 mins after market open"
+  (partial check-event-hours :start-of-market-hours))
+
+(def end-of-market-hours
+  "Active only during the 10 mins before market close"
+  (partial check-event-hours :end-of-market-hours))
+
 (def after-market
   "Active only during after hours"
   (partial check-event-hours :after-market))
@@ -129,6 +167,10 @@
 (def non-trading
   "Active only during non trading days (markets are closed)"
   (partial check-event-hours :non-trading))
+
+(def engineer-work-hours
+  "Active only when engineers will definitely be in (10 am to 5 pm on regular days)"
+  (partial check-event-hours :engineer-work-hours))
 
 (defn weekends [_ & children]
   "Active only during the weekends"

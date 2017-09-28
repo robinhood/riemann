@@ -8,8 +8,8 @@
           (format "%s: %s is %.4g on %s"
                   (clojure.string/upper-case
                    (name (:service-status event)))
-                  (:service event)
-                  (float (:metric event))
+                  (:service-description event)
+                  (float (:metric event 0))
                   (:host event)))
    :icon_emoji ":riemann:" })
 

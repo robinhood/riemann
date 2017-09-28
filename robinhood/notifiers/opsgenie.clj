@@ -28,8 +28,8 @@
   pulls more important info into beginning of the string"
   [event]
   (format "%s is %.4g on %s"
-          (:service event)
-          (float (:metric event))
+          (:service-description event)
+          (float (:metric event 0))
           (:host event)))
 
 (defn- description
@@ -37,16 +37,15 @@
   [event]
   (str
    "Host: " (:host event)
-   " \nService: " (:description event)
+   " \nService: " (:metric-name event)
    " \nState: " (:service-status event)
-   " \nMetric: " (:metric event)
+   " \nMetric: " (:metric event 0)
    " \nDescription: " (:service event)))
 
 (defn- api-alias
   "Generate OpsGenie alias based on event"
   [event]
-  (hash (str (:host event) \uffff (:description event) \uffff
-       (clojure.string/join \uffff (sort (:tags event))))))
+  (hash (str (:host event) \uffff (:service event))))
 
 (defn- create-alert
   "Create alert in OpsGenie"

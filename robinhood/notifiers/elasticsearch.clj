@@ -48,7 +48,7 @@
   [event]
   {:host (:host event)
    :service (:service event)
-   :metric (:metric event)
+   :metric (:metric event 0)
    :tags (:tags event)
    :service-status (:service-status event)
    (keyword "@timestamp") (time-format/unparse
