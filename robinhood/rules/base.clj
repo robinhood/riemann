@@ -1,7 +1,9 @@
 (ns robinhood.rules.base
   (:require (riemann common
                      config
-                     [streams :refer [where* with]])))
+                     [streams :refer [where* with]])
+            [robinhood.rules.common :refer [aggregate-by]
+             :rename {aggregate-by aggr}]))
 
 (defn compare-metric-and-conditions
   "Checks if the event satisfies additional conditions and then checks
@@ -74,9 +76,9 @@
 
 (def when-equal
   "Fires when metric value is equal to the condition value"
-  (partial compare-metric-and-conditions =))
+  (partial compare-metric-and-conditions ==))
 
 (def when-not-equal
   "Fires when metric value is not equal to the condition value"
-  (partial compare-metric-and-conditions (complement =)))
+  (partial compare-metric-and-conditions (complement ==)))
 

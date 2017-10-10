@@ -51,6 +51,7 @@
    :metric (:metric event 0)
    :tags (:tags event)
    :service-status (:service-status event)
+   :service-description (:service-description event)
    (keyword "@timestamp") (time-format/unparse
                            (time-format/formatters :date-time)
                            (time-coerce/from-long (long (* 1000 (:time event)))))})

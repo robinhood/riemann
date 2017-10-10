@@ -19,5 +19,5 @@
      :alert [(email "ops")]
      :modifiers {:description "OpenTSDB HBase writes"
                  :watch-events true
-                 :by-host true}}
+                 :by :host}}
     ]})

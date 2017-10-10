@@ -28,5 +28,6 @@
      :transform max
      :thread-through [when-lower-r]
      :alert [log-warning (email "operations")]
-     :modifiers {:description "Available memory"}}
+     :modifiers {:by :host
+                 :description "Available memory"}}
     ]})

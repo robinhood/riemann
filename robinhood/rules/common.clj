@@ -1,7 +1,7 @@
 (ns robinhood.rules.common
   (:require (riemann common
                      config
-                     [streams :refer [where* by smap expired?]])
+                     [streams :refer [where* with by smap expired?]])
             [clojure.string]
             [robinhood.notifiers.log :as log]))
 
@@ -24,18 +24,14 @@
           :filters
           :metric
           :modifiers
+          :rule-id
           :roles
           :thread-through))
 
-(defn rewrite-host [e]
-  (assoc e :host (clojure.string/join "," (:tags e))))
-
-(defmacro aggregate-by-host-or-role
-  [conditions consumer-stream]
-  `(let [aggregate-by-host# (by :host ~consumer-stream)]
-     (if (get-in ~conditions [:modifiers :by-host] true)
-       aggregate-by-host#
-       (smap rewrite-host aggregate-by-host#))))
+(defn rewrite-host [conditions e]
+  (if (get-in conditions [:modifiers :by-role] true)
+    (assoc e :host (clojure.string/join "," (:tags e)))
+    (assoc e :host "riemann" :roles "riemann" :tags ["riemann"])))
 
 (defmacro aggregate-by
   [conditions consumer-stream]
@@ -61,11 +57,6 @@
               (not (riemann.streams/tagged-any? excluded-roles event)))
           (subset? conditions event))))
 
-(defn block-expired-events
-  "Filters out expired events"
-  [_ child-stream]
-  (where* (complement expired?)
-          child-stream))
 
 (defn filter-events
   [conditions child-stream]

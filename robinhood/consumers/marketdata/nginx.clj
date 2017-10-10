@@ -22,20 +22,20 @@
                 :status "2xx"
                 :roles ["marketdata-server"]
                 :thread-through [mean sum]
-                :modifiers {:by-host false
+                :modifiers {:by :roles
                             :interval 60}}
                {:metric-name "nginx.hits.rate"
                 :status "4xx"
                 :roles ["marketdata-server"]
                 :thread-through [mean sum]
-                :modifiers {:by-host false
+                :modifiers {:by :roles
                             :interval 60}}
 
                {:metric-name "nginx.hits.rate"
                 :status "5xx"
                 :roles ["marketdata-server"]
                 :thread-through [mean sum]
-                :modifiers {:by-host false
+                :modifiers {:by :roles
                             :interval 60}}
                ]
      :metric [2 5]
@@ -43,5 +43,5 @@
      :thread-through [when-higher-r]
      :alert [log-warning (email "markets") (slack-alert "#markets")]
      :modifiers {:description "Marketdata HTTP error percentage"
-                 :by-host false}}
+                 :by :roles}}
     ]})

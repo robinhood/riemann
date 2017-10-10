@@ -29,7 +29,7 @@
                             :metric 30
                             :tags ["bastion"]
                             :type "usage"}
-         event (assoc trigger-condition :time 1 :host "foo.example.com")]
+         event (assoc trigger-condition :time 1 :host "foo.bar.com")]
 
      (deftest test-when-lower
        (let [test-event (assoc event :metric 20)

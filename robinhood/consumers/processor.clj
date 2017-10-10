@@ -3,11 +3,11 @@
                      config
                      [streams :refer :all]
                      [test :refer [tap io inject! deftest]])
-            [robinhood.notifiers.common :refer [disseminate-check-output]]
+            [robinhood.notifiers.common :refer [prep-output-streams]]
             [robinhood.notifiers.log :refer [log-info]]
-            [robinhood.rules.common :refer [check-event-tags filter-events block-expired-events]]
-            [robinhood.rules.common :refer [aggregate-by-host-or-role]
-             :rename {aggregate-by-host-or-role aggr}]))
+            [robinhood.rules.common :refer [check-event-tags filter-events]]
+            [robinhood.rules.common :refer [aggregate-by]
+             :rename {aggregate-by aggr}]))
 
 (defn- prep-streams
   "All rule functions extract thresholds and modifiers (:modifiers)
@@ -29,7 +29,7 @@
    the notifier function at the end to complete them. We start with
    the last stream first and thread back to first."
   ([rule]
-     (process-single-metric-rule rule (disseminate-check-output rule)))
+     (process-single-metric-rule rule (prep-output-streams rule)))
   ([rule notifier-stream]
      (let [stream-list (conj (:thread-through rule)
                              filter-events)
@@ -49,11 +49,11 @@
          {:metric transformed-metric
           :service (:description modifiers)
           :description (:description modifiers)
-          :host (if (:by-host modifiers true)
-                  (:host (first events))
-                  (clojure.string/join "," (:tags (first events))))
+          :host (:host (first events))
+          :roles (:roles (first events))
           :tags (:tags (first events))
-          :ttl (riemann.config/rh_config "default_ttl")})))))
+          :ttl (get modifiers :ttl
+                    (riemann.config/rh_config "default_ttl"))})))))
 
 (defn- make-projector [multi-rule]
   "For each set of multi metric rule, this creates a projector that
@@ -63,7 +63,7 @@
         threaded-top-streams (thread-streams
                               multi-rule
                               (reverse (:thread-through multi-rule)))
-        notifier-stream (disseminate-check-output multi-rule)]
+        notifier-stream (prep-output-streams multi-rule)]
     (aggr multi-rule
           (project*
            (vec (map (fn [sub-rule]
@@ -84,20 +84,16 @@
                      (process-single-metric-rule sub-rule projector))
                    sub-rules)))))
 
-(defn setup-multi-metric-rules
-  "Sets up streams for every condition in the conditions list"
-  [multi-rules]
-  (doseq [multi-rule multi-rules]
-    (riemann.config/streams
-     (process-multi-metric-rule multi-rule))))
-
-
 (let [rule-processors {:single-metric-rules process-single-metric-rule
-                       :multi-metric-rules process-multi-metric-rule}]
+                       :multi-metric-rules process-multi-metric-rule}
+      stream-generator (fn [rule-type rule]
+                         (let [processor (rule-type rule-processors)]
+                           (processor (assoc rule
+                                        :rule-id
+                                        (str (java.util.UUID/randomUUID))))))]
   (defn process-rules [[rule-type rules]]
     (flatten
-     (map (fn [rule]
-            ((rule-type rule-processors) rule)) rules))))
+     (map (partial stream-generator rule-type) rules))))
 
 (defn extract-single-metric-name
   "For every rule extract the metric name that we care about"

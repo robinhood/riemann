@@ -23,6 +23,7 @@
      :thread-through [when-out-of-range extended]
      :alert [log-warning (email "operations") (slack-alert "#operations")]
      :modifiers {:description "NTP offset"
+                 :by :roles
                  :flap-threshold 1}}
 
     ]})
